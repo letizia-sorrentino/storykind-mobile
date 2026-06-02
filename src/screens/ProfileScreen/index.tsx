@@ -15,25 +15,27 @@ import { PRONOUNS, SCENARIOS } from "../../types";
 import type { Profile } from "../../types";
 import { validateProfile, type FormErrors } from "./validate";
 import { profileRepo } from "../../storage/profileRepo";
+import { useNavigation } from "@react-navigation/native";
+import type { NavigationProp } from "../../navigation/types";
 
 const ProfileScreen = () => {
   const [form, setForm] = useState<Partial<Profile>>({});
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
-
+  const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
-  let active = true;
-  (async () => {
-    const saved = await profileRepo.load();
-    if (active && saved) {
-      setForm(saved);
-    }
-  })();
-  return () => {
-    active = false;
-  };
-}, []);
+    let active = true;
+    (async () => {
+      const saved = await profileRepo.load();
+      if (active && saved) {
+        setForm(saved);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSave = async () => {
     const nextErrors = validateProfile(form);
@@ -56,6 +58,7 @@ const ProfileScreen = () => {
       setSaving(true);
       await profileRepo.save(profile);
       setForm(profile);
+      navigation.navigate("Generate");
     } catch {
       Alert.alert(
         "Could not save profile",
