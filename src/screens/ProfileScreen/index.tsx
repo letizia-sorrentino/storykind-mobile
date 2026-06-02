@@ -1,13 +1,70 @@
-import { useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import Field from "../../components/Field";
 import OptionButton from "../../components/OptionButton";
+import Button from "../../components/Button";
 import { colors, radius, typography, spacing } from "../../constants/theme";
 import { PRONOUNS, SCENARIOS } from "../../types";
 import type { Profile } from "../../types";
+import { validateProfile, type FormErrors } from "./validate";
+import { profileRepo } from "../../storage/profileRepo";
 
 const ProfileScreen = () => {
   const [form, setForm] = useState<Partial<Profile>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [saving, setSaving] = useState(false);
+
+
+  useEffect(() => {
+  let active = true;
+  (async () => {
+    const saved = await profileRepo.load();
+    if (active && saved) {
+      setForm(saved);
+    }
+  })();
+  return () => {
+    active = false;
+  };
+}, []);
+
+  const handleSave = async () => {
+    const nextErrors = validateProfile(form);
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+    const profile: Profile = {
+      id: form.id ?? Date.now().toString(),
+      name: form.name!.trim(),
+      age: form.age!,
+      pronouns: form.pronouns!,
+      scenario: form.scenario!,
+      sensitivities: form.sensitivities?.trim() ?? "",
+      createdAt: form.createdAt ?? new Date().toISOString(),
+    };
+
+    try {
+      setSaving(true);
+      await profileRepo.save(profile);
+      setForm(profile);
+    } catch {
+      Alert.alert(
+        "Could not save profile",
+        "Something went wrong. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -35,7 +92,7 @@ const ProfileScreen = () => {
             }));
           }}
           keyboardType="numeric"
-          placeholder="1–17"
+          placeholder="1–12"
           placeholderTextColor={colors.muted}
         />
       </Field>
@@ -80,6 +137,8 @@ const ProfileScreen = () => {
           maxLength={500}
         />
       </Field>
+
+      <Button label="Save profile" onPress={handleSave} loading={saving} />
     </ScrollView>
   );
 };
