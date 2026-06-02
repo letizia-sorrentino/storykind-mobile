@@ -1,11 +1,14 @@
-import { View, Text, StyleSheet } from "react-native";
+import { useState } from "react";
+import { ScrollView, Text, StyleSheet } from "react-native";
 import { colors, typography, spacing } from "../../constants/theme";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const GenerateScreen = () => {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text style={styles.title}>Generate</Text>
-    </View>
+    </ScrollView>
   );
 };
 
