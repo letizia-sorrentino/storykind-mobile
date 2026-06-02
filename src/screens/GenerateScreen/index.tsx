@@ -9,8 +9,6 @@ const GenerateScreen = () => {
   );
 };
 
-export default GenerateScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -24,3 +22,5 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
 });
+
+export default GenerateScreen;

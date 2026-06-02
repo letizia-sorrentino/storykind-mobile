@@ -9,8 +9,6 @@ const LibraryScreen = () => {
   );
 };
 
-export default LibraryScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -24,3 +22,4 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
 });
+export default LibraryScreen;
