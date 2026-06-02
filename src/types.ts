@@ -21,4 +21,3 @@ export type Profile = {
   sensitivities: string;
   createdAt: string;
 };
-
