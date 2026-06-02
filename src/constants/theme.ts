@@ -1,9 +1,12 @@
 export const colors = {
   background: "#F0F4F8",
+  surface: "#FFFFFF",
   primary: "#9DB4D6",
   accent: "#F6BF5F",
   text: "#2D3748",
   textSubtle: "#718096",
+  border: "#CBD5E0",
+  muted: "#A0AEC0",
 } as const;
 
 export const typography = {
@@ -14,6 +17,7 @@ export const typography = {
   // Body and below: line height 1.4
   body: { fontSize: 16, fontWeight: "400", lineHeight: 22 },
   caption: { fontSize: 13, fontWeight: "400", lineHeight: 18 },
+  label: { fontSize: 12, fontWeight: "500", lineHeight: 16 },
 } as const;
 
 export const spacing = {
