@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ScrollView, Text, StyleSheet } from "react-native";
+import EventSource from "react-native-sse";
 import { colors, typography, spacing } from "../../constants/theme";
 import Button from "../../components/Button";
 import { profileRepo } from "../../storage/profileRepo";
@@ -10,6 +11,13 @@ const GenerateScreen = () => {
   const [story, setStory] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const esRef = useRef<EventSource | null>(null);
+
+  useEffect(() => {
+    return () => {
+      esRef.current?.close();
+    };
+  }, []);
 
   async function handleGenerate() {
     if (!API_URL) {
@@ -27,29 +35,39 @@ const GenerateScreen = () => {
     setError(null);
     setStory("");
 
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: `Write a preparation story for ${currentProfile.name}, age ${currentProfile.age}, about ${currentProfile.scenario}.`,
-            },
-          ],
-        }),
-      });
+    const es = new EventSource(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            content: `Write a preparation story for ${currentProfile.name}, age ${currentProfile.age}, about ${currentProfile.scenario}.`,
+          },
+        ],
+      }),
+      pollingInterval: 0,
+    });
 
-      if (!response.ok) throw new Error(`Request failed (${response.status})`);
-      setStory(await response.text());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
+    esRef.current = es;
+
+    es.addEventListener("message", (event) => {
+      if (event.data === "[DONE]") {
+        es.close();
+        setLoading(false);
+        return;
+      }
+      if (event.data) {
+        setStory((prev) => prev + JSON.parse(event.data as string));
+      }
+    });
+
+    es.addEventListener("error", () => {
+      setError("Something went wrong while streaming the story.");
       setLoading(false);
-    }
+      es.close();
+    });
+
   }
 
   return (
