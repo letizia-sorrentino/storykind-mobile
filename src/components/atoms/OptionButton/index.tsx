@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
-import { colors, radius, typography, spacing } from "../../constants/theme";
+import { colors, radius, typography, spacing } from "../../../constants/theme";
 
 type OptionButtonProps = {
   label: string;

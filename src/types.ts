@@ -17,7 +17,6 @@ export type Profile = {
   name: string;
   age: number;
   pronouns: Pronouns;
-  scenario: Scenario;
   sensitivities: string;
   createdAt: string;
 };

@@ -4,7 +4,6 @@ export type FormErrors = {
   name?: string;
   age?: string;
   pronouns?: string;
-  scenario?: string;
   sensitivities?: string;
 };
 
@@ -18,8 +17,6 @@ export function validateProfile(form: Partial<Profile>): FormErrors {
   const name = form.name?.trim() ?? "";
   const age = form.age;
   const pronouns = form.pronouns?.trim() ?? "";
-  const scenario = form.scenario?.trim() ?? "";
-
   if (name !== undefined) {
     if (name.length === 0) {
       errors.name = "Please enter a name.";
@@ -39,12 +36,6 @@ export function validateProfile(form: Partial<Profile>): FormErrors {
   if (pronouns !== undefined) {
     if (pronouns.length === 0) {
       errors.pronouns = "Please choose pronouns.";
-    }
-  }
-
-  if (scenario !== undefined) {
-    if (scenario.length === 0) {
-      errors.scenario = "Please enter a scenario.";
     }
   }
 

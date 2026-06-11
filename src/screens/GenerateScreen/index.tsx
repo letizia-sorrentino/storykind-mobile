@@ -1,101 +1,104 @@
-import { useState, useRef, useEffect } from "react";
-import { ScrollView, Text, StyleSheet } from "react-native";
-import EventSource from "react-native-sse";
-import { colors, typography, spacing } from "../../constants/theme";
-import Button from "../../components/Button";
+import { useState, useCallback } from "react";
+import { ScrollView, View, Text, StyleSheet } from "react-native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import Button from "../../components/atoms/Button";
 import { profileRepo } from "../../storage/profileRepo";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
+import type { Profile, Scenario } from "../../types";
+import type { NavigationProp } from "../../navigation/types";
+import { colors, typography, spacing } from "../../constants/theme";
+import { useStoryStream } from "./../../hooks/useStoryStream";
+import ScenarioForm from "../../components/organisms/ScenarioForm";
+import StoryView from "../../components/organisms/StoryView";
 
 const GenerateScreen = () => {
-  const [story, setStory] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const esRef = useRef<EventSource | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(
+    null,
+  );
+  const [view, setView] = useState<"form" | "story">("form");
+  const navigation = useNavigation<NavigationProp>();
+  const { story, loading, error, generate, stop, reset } = useStoryStream();
 
-  useEffect(() => {
-    return () => {
-      esRef.current?.close();
-    };
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      (async () => {
+        const saved = await profileRepo.load();
+        if (active) setProfile(saved);
+      })();
+      return () => {
+        active = false;
+        stop();
+      };
+    }, [stop]),
+  );
 
-  async function handleGenerate() {
-    if (!API_URL) {
-      setError("API URL is not defined");
-      return;
-    }
-    const currentProfile = await profileRepo.load();
-
-    if (!currentProfile) {
-      setError("Profile not loaded");
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setStory("");
-
-    const es = new EventSource(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: "user",
-            content: `Write a preparation story for ${currentProfile.name}, age ${currentProfile.age}, about ${currentProfile.scenario}.`,
-          },
-        ],
-      }),
-      pollingInterval: 0,
-    });
-
-    esRef.current = es;
-
-    es.addEventListener("message", (event) => {
-      if (event.data === "[DONE]") {
-        es.close();
-        setLoading(false);
-        return;
-      }
-      if (event.data) {
-        setStory((prev) => prev + JSON.parse(event.data as string));
-      }
-    });
-
-    es.addEventListener("error", () => {
-      setError("Something went wrong while streaming the story.");
-      setLoading(false);
-      es.close();
-    });
-
+  if (!profile) {
+    return (
+      <View style={styles.empty}>
+        <Text style={styles.heading}>Set up a profile first</Text>
+        <Text style={styles.emptyBody}>
+          Tell us about your child so we can write stories just for them.
+        </Text>
+        <Button
+          label="Go to Profile"
+          onPress={() => navigation.navigate("Profile")}
+        />
+      </View>
+    );
   }
+
+  const handleGenerate = () => {
+    if (!selectedScenario) return;
+    generate({
+      name: profile.name,
+      age: profile.age,
+      scenario: selectedScenario,
+    });
+    setView("story");
+  };
+
+  const handleNewStory = () => {
+    reset();
+    setView("form");
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Button
-        label="Generate story"
-        onPress={handleGenerate}
-        loading={loading}
-      />
-      {error && <Text style={styles.error}>{error}</Text>}
-      {story ? <Text style={styles.story}>{story}</Text> : null}
+      {view === "form" ? (
+        <ScenarioForm
+          childName={profile.name}
+          childAge={profile.age}
+          selected={selectedScenario}
+          onSelect={setSelectedScenario}
+          onGenerate={handleGenerate}
+          loading={loading}
+        />
+      ) : (
+        <StoryView
+          scenario={selectedScenario ?? ""}
+          childName={profile.name}
+          story={story}
+          loading={loading}
+          error={error}
+          onStop={stop}
+          onNew={handleNewStory}
+        />
+      )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  container: { padding: spacing.lg, gap: spacing.lg },
+  empty: {
+    flex: 1,
+    justifyContent: "center",
     padding: spacing.lg,
-    gap: spacing.lg,
+    gap: spacing.md,
   },
-  story: {
-    ...typography.body,
-    color: colors.text,
-  },
-  error: {
-    ...typography.body,
-    color: "#D7263D", // swap for colors.error if/when you add one to the theme
-  },
+  heading: { ...typography.h1, color: colors.text },
+  emptyBody: { ...typography.body, color: colors.textSubtle },
 });
 
 export default GenerateScreen;

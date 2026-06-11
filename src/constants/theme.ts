@@ -7,6 +7,7 @@ export const colors = {
   textSubtle: "#718096",
   border: "#CBD5E0",
   muted: "#A0AEC0",
+  error: "#C53030",
 } as const;
 
 export const typography = {
