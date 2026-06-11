@@ -1,29 +1,60 @@
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 import ProfileScreen from "../screens/ProfileScreen";
 import GenerateScreen from "../screens/GenerateScreen";
 import LibraryScreen from "../screens/LibraryScreen";
 
 import { colors } from "../constants/theme";
-import { RootStackParamList } from "./types";
+import { RootTabParamList } from "./types";
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<RootTabParamList>();
 
 const RootNavigator = () => {
   return (
-    <Stack.Navigator
+    <Tab.Navigator
       initialRouteName="Profile"
       screenOptions={{
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
         headerTitleStyle: { fontWeight: "700" },
-        contentStyle: { backgroundColor: colors.background },
+        sceneStyle: { backgroundColor: colors.background },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
       }}
     >
-      <Stack.Screen name="Profile" component={ProfileScreen} />
-      <Stack.Screen name="Generate" component={GenerateScreen} />
-      <Stack.Screen name="Library" component={LibraryScreen} />
-    </Stack.Navigator>
+      <Tab.Screen
+        name="Generate"
+        component={GenerateScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="sparkles-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Library"
+        component={LibraryScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="book-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
   );
 };
 export default RootNavigator;

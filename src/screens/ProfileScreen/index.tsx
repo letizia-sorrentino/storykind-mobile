@@ -1,28 +1,19 @@
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
-import Field from "../../components/Field";
-import OptionButton from "../../components/OptionButton";
-import Button from "../../components/Button";
-import { colors, radius, typography, spacing } from "../../constants/theme";
-import { PRONOUNS, SCENARIOS } from "../../types";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import Field from "../../components/molecules/Field";
+import OptionButton from "../../components/atoms/OptionButton";
+import Button from "../../components/atoms/Button";
+import Input from "../../components/atoms/Input";
+import { colors, typography, spacing } from "../../constants/theme";
+import { PRONOUNS } from "../../types";
 import type { Profile } from "../../types";
 import { validateProfile, type FormErrors } from "./validate";
 import { profileRepo } from "../../storage/profileRepo";
-import { useNavigation } from "@react-navigation/native";
-import type { NavigationProp } from "../../navigation/types";
 
 const ProfileScreen = () => {
   const [form, setForm] = useState<Partial<Profile>>({});
   const [errors, setErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
-  const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
     let active = true;
@@ -49,7 +40,6 @@ const ProfileScreen = () => {
       name: form.name!.trim(),
       age: form.age!,
       pronouns: form.pronouns!,
-      scenario: form.scenario!,
       sensitivities: form.sensitivities?.trim() ?? "",
       createdAt: form.createdAt ?? new Date().toISOString(),
     };
@@ -58,7 +48,7 @@ const ProfileScreen = () => {
       setSaving(true);
       await profileRepo.save(profile);
       setForm(profile);
-      navigation.navigate("Generate");
+      Alert.alert("Saved", "Profile updated.");
     } catch {
       Alert.alert(
         "Could not save profile",
@@ -74,18 +64,15 @@ const ProfileScreen = () => {
       <Text style={styles.heading}>Child's Profile</Text>
 
       <Field label="Name">
-        <TextInput
-          style={styles.input}
+        <Input
           value={form.name ?? ""}
           onChangeText={(text) => setForm((prev) => ({ ...prev, name: text }))}
           placeholder="e.g. Jack"
-          placeholderTextColor={colors.muted}
         />
       </Field>
 
       <Field label="Age">
-        <TextInput
-          style={styles.input}
+        <Input
           value={form.age?.toString() ?? ""}
           onChangeText={(text) => {
             const parsed = parseInt(text, 10);
@@ -96,7 +83,6 @@ const ProfileScreen = () => {
           }}
           keyboardType="numeric"
           placeholder="1–12"
-          placeholderTextColor={colors.muted}
         />
       </Field>
 
@@ -113,28 +99,13 @@ const ProfileScreen = () => {
         </View>
       </Field>
 
-      <Field label="Scenario">
-        <View style={styles.optionsRow}>
-          {SCENARIOS.map((option) => (
-            <OptionButton
-              key={option}
-              label={option}
-              selected={form.scenario === option}
-              onPress={() => setForm((prev) => ({ ...prev, scenario: option }))}
-            />
-          ))}
-        </View>
-      </Field>
-
       <Field label="Sensitivities (optional)">
-        <TextInput
-          style={[styles.input, styles.inputMultiline]}
+        <Input
           value={form.sensitivities ?? ""}
           onChangeText={(text) =>
             setForm((prev) => ({ ...prev, sensitivities: text }))
           }
           placeholder="e.g. scared of dogs, doesn't like loud noises"
-          placeholderTextColor={colors.muted}
           multiline
           numberOfLines={3}
           maxLength={500}
@@ -154,19 +125,6 @@ const styles = StyleSheet.create({
   heading: {
     ...typography.h1,
     color: colors.text,
-  },
-  input: {
-    ...typography.body,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    color: colors.text,
-    backgroundColor: colors.surface,
-  },
-  inputMultiline: {
-    minHeight: 80,
-    textAlignVertical: "top",
   },
   optionsRow: {
     flexDirection: "row",

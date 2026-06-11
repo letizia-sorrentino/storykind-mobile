@@ -44,3 +44,6 @@ yarn-error.*
 # CLAUDE
 CLAUDE.md
 .claude/
+
+# local planning
+docs/PLAN.md

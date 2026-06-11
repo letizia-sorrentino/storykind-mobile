@@ -1,9 +1,8 @@
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
-export type RootStackParamList = {
+import type { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+export type RootTabParamList = {
   Profile: undefined;
   Generate: undefined;
   Library: undefined;
 };
 
-export type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+export type NavigationProp = BottomTabNavigationProp<RootTabParamList>;
